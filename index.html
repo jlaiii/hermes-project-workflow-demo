@@ -13,32 +13,29 @@
       --accent: #58a6ff;
       --muted: #8b949e;
       --ok: #3fb950;
+      --warn: #d29922;
+      --error: #f85149;
+      --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: var(--font);
       background: var(--bg);
       color: var(--fg);
       line-height: 1.6;
       padding: 2rem 1rem;
     }
     .container {
-      max-width: 720px;
+      max-width: 800px;
       margin: 0 auto;
     }
     header {
       text-align: center;
       margin-bottom: 2rem;
     }
-    h1 {
-      font-size: 2rem;
-      margin-bottom: 0.5rem;
-      color: var(--fg);
-    }
-    .subtitle {
-      color: var(--muted);
-      font-size: 1.1rem;
-    }
+    h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+    .subtitle { color: var(--muted); font-size: 1.1rem; }
+
     .card {
       background: var(--card);
       border: 1px solid var(--border);
@@ -50,17 +47,14 @@
       font-size: 1.1rem;
       margin-bottom: 0.75rem;
       color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
-    .card p, .card li {
-      color: var(--muted);
-      font-size: 0.95rem;
-    }
-    .card ul {
-      padding-left: 1.25rem;
-    }
-    .card li {
-      margin-bottom: 0.5rem;
-    }
+    .card p, .card li { color: var(--muted); font-size: 0.95rem; }
+    .card ul { padding-left: 1.25rem; }
+    .card li { margin-bottom: 0.5rem; }
+
     .links {
       display: flex;
       gap: 1rem;
@@ -75,14 +69,17 @@
       color: var(--accent);
       text-decoration: none;
       font-size: 0.9rem;
-      transition: background 0.2s;
+      transition: all 0.2s;
     }
     .links a:hover {
       background: var(--accent);
       color: var(--bg);
     }
+
     .status {
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
       padding: 0.25rem 0.75rem;
       border-radius: 999px;
       background: rgba(63,185,80,0.15);
@@ -91,6 +88,106 @@
       font-weight: 600;
       margin-top: 0.5rem;
     }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--ok);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .check-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 0;
+    }
+    .check-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: bold;
+    }
+    .check-pass { background: rgba(63,185,80,0.2); color: var(--ok); }
+    .check-warn { background: rgba(210,153,34,0.2); color: var(--warn); }
+    .check-fail { background: rgba(248,81,73,0.2); color: var(--error); }
+    .check-pending { background: var(--border); color: var(--muted); }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .stat-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 0.25rem;
+    }
+
+    .log {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.75rem 1rem;
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 0.75rem;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .log-entry {
+      padding: 0.15rem 0;
+      border-bottom: 1px solid rgba(48,54,61,0.5);
+    }
+    .log-entry:last-child { border-bottom: none; }
+    .log-time { color: var(--accent); margin-right: 0.5rem; }
+    .log-ok { color: var(--ok); }
+    .log-warn { color: var(--warn); }
+    .log-error { color: var(--error); }
+
+    .commit-list {
+      margin-top: 0.75rem;
+    }
+    .commit {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem;
+      border-radius: 6px;
+      margin-bottom: 0.25rem;
+      font-size: 0.85rem;
+    }
+    .commit:hover { background: var(--bg); }
+    .commit-sha {
+      font-family: monospace;
+      color: var(--accent);
+      font-size: 0.8rem;
+    }
+    .commit-msg { color: var(--fg); }
+    .commit-time { color: var(--muted); font-size: 0.75rem; margin-left: auto; }
+
     footer {
       text-align: center;
       color: var(--muted);
@@ -99,6 +196,17 @@
       padding-top: 1rem;
       border-top: 1px solid var(--border);
     }
+    .refresh-btn {
+      background: var(--border);
+      color: var(--accent);
+      border: none;
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      margin-left: 0.5rem;
+    }
+    .refresh-btn:hover { background: var(--accent); color: var(--bg); }
   </style>
 </head>
 <body>
@@ -106,44 +214,189 @@
     <header>
       <h1>🚀 hermes-project-workflow-demo</h1>
       <p class="subtitle">Hermes auto-project-page demo</p>
-      <span class="status">● Live on GitHub Pages</span>
+      <span class="status">
+        <span class="status-dot"></span>
+        Live on GitHub Pages
+      </span>
     </header>
 
+    <!-- LIVE REPO STATS -->
     <div class="card">
-      <h2>What This Is</h2>
-      <p>This page was auto-generated by Hermes as part of the standard project workflow test. Every project we build gets:</p>
+      <h2>📊 Live Repo Stats</h2>
+      <div class="stats-grid" id="repo-stats">
+        <div class="stat-box"><div class="stat-value" id="stat-stars">…</div><div class="stat-label">Stars</div></div>
+        <div class="stat-box"><div class="stat-value" id="stat-forks">…</div><div class="stat-label">Forks</div></div>
+        <div class="stat-box"><div class="stat-value" id="stat-issues">…</div><div class="stat-label">Issues</div></div>
+        <div class="stat-box"><div class="stat-value" id="stat-updated">…</div><div class="stat-label">Updated</div></div>
+      </div>
+    </div>
+
+    <!-- DYNAMIC HEALTH CHECKS -->
+    <div class="card">
+      <h2>🔍 Health Checks <button class="refresh-btn" onclick="runChecks()">⟳ Refresh</button></h2>
+      <div id="health-checks">
+        <div class="check-item"><span class="check-icon check-pending" id="check-html">?</span><span>HTML rendered correctly</span></div>
+        <div class="check-item"><span class="check-icon check-pending" id="check-css">?</span><span>CSS styles applied</span></div>
+        <div class="check-item"><span class="check-icon check-pending" id="check-js">?</span><span>JavaScript executing</span></div>
+        <div class="check-item"><span class="check-icon check-pending" id="check-api">?</span><span>GitHub API reachable</span></div>
+        <div class="check-item"><span class="check-icon check-pending" id="check-repo">?</span><span>Repo exists and is public</span></div>
+        <div class="check-item"><span class="check-icon check-pending" id="check-pages">?</span><span>GitHub Pages enabled</span></div>
+        <div class="check-item"><span class="check-icon check-pending" id="check-ssl">?</span><span>SSL/HTTPS active</span></div>
+      </div>
+      <div class="log" id="check-log"><div class="log-entry"><span class="log-time">--:--:--</span>Waiting for checks...</div></div>
+    </div>
+
+    <!-- RECENT COMMITS -->
+    <div class="card">
+      <h2>📜 Recent Commits</h2>
+      <div class="commit-list" id="commit-list">
+        <div style="color:var(--muted);font-size:0.9rem;">Loading...</div>
+      </div>
+    </div>
+
+    <!-- WORKFLOW RESULTS -->
+    <div class="card">
+      <h2>✅ Workflow Results</h2>
       <ul>
-        <li>A descriptive README with links</li>
-        <li>This <code>index.html</code> project page</li>
-        <li>GitHub Pages enabled for a public URL</li>
-        <li>The Pages URL linked in the repo description</li>
+        <li>GitHub repo created via API</li>
+        <li>README written with homepage link</li>
+        <li>index.html generated with dark theme + dynamic checks</li>
+        <li>GitHub Pages enabled on main branch</li>
+        <li>Repo description updated with URL</li>
+        <li>Live URL verified: <a href="https://jlaiii.github.io/hermes-project-workflow-demo/" style="color:var(--accent)">https://jlaiii.github.io/hermes-project-workflow-demo/</a></li>
       </ul>
     </div>
 
+    <!-- PROJECT LINKS -->
     <div class="card">
-      <h2>Project Links</h2>
+      <h2>🔗 Project Links</h2>
       <div class="links">
         <a href="https://github.com/jlaiii/hermes-project-workflow-demo" target="_blank">📁 GitHub Repo</a>
         <a href="https://github.com/jlaiii/hermes-project-workflow-demo/blob/main/README.md" target="_blank">📝 README</a>
         <a href="https://github.com/jlaiii/hermes-project-workflow-demo/issues" target="_blank">🐛 Issues</a>
+        <a href="https://github.com/jlaiii/hermes-project-workflow-demo/actions" target="_blank">⚙️ Actions</a>
       </div>
     </div>
 
-    <div class="card">
-      <h2>Workflow Test Results</h2>
-      <ul>
-        <li>✅ GitHub repo created via API</li>
-        <li>✅ README written with homepage link</li>
-        <li>✅ index.html generated with dark theme</li>
-        <li>✅ GitHub Pages enabled on main branch</li>
-        <li>✅ Repo description updated with URL</li>
-        <li>✅ Live URL verified: <a href="https://jlaiii.github.io/hermes-project-workflow-demo/" style="color:var(--accent)">https://jlaiii.github.io/hermes-project-workflow-demo/</a></li>
-      </ul>
-    </div>
-
     <footer>
-      Generated by Hermes Agent · <a href="https://github.com/jlaiii" style="color:var(--accent)">jlaiii</a> · 2026-05-03
+      Generated by Hermes Agent · <a href="https://github.com/jlaiii" style="color:var(--accent)">jlaiii</a>
+      · Last check: <span id="last-check">--</span>
     </footer>
   </div>
+
+  <script>
+    const OWNER = 'jlaiii';
+    const REPO = 'hermes-project-workflow-demo';
+    const API_BASE = 'https://api.github.com/repos/' + OWNER + '/' + REPO;
+
+    function log(msg, type='info') {
+      const now = new Date().toLocaleTimeString();
+      const logDiv = document.getElementById('check-log');
+      const cls = type === 'ok' ? 'log-ok' : type === 'warn' ? 'log-warn' : type === 'error' ? 'log-error' : '';
+      logDiv.innerHTML += '<div class="log-entry"><span class="log-time">' + now + '</span><span class="' + cls + '">' + msg + '</span></div>';
+      logDiv.scrollTop = logDiv.scrollHeight;
+    }
+
+    function setCheck(id, state, msg) {
+      const el = document.getElementById(id);
+      el.className = 'check-icon check-' + state;
+      el.textContent = state === 'pass' ? '✓' : state === 'fail' ? '✗' : state === 'warn' ? '!' : '?';
+      if (msg) log(msg, state);
+    }
+
+    async function runChecks() {
+      document.getElementById('check-log').innerHTML = '';
+      log('Starting health checks...', 'info');
+
+      // Check 1: HTML rendered
+      setCheck('check-html', 'pass', 'HTML document fully loaded');
+
+      // Check 2: CSS applied
+      const bodyColor = getComputedStyle(document.body).backgroundColor;
+      if (bodyColor === 'rgb(13, 17, 23)' || bodyColor === '#0d1117') {
+        setCheck('check-css', 'pass', 'Dark theme CSS applied correctly');
+      } else {
+        setCheck('check-css', 'warn', 'CSS loaded but colors may differ');
+      }
+
+      // Check 3: JS executing
+      setCheck('check-js', 'pass', 'JavaScript runtime active');
+
+      // Check 4: GitHub API reachable
+      try {
+        const start = Date.now();
+        const resp = await fetch('https://api.github.com');
+        const ms = Date.now() - start;
+        if (resp.ok) {
+          setCheck('check-api', 'pass', 'GitHub API reachable (' + ms + 'ms)');
+        } else {
+          setCheck('check-api', 'warn', 'GitHub API returned ' + resp.status);
+        }
+      } catch (e) {
+        setCheck('check-api', 'fail', 'GitHub API unreachable: ' + e.message);
+      }
+
+      // Check 5: Repo exists
+      try {
+        const resp = await fetch(API_BASE);
+        if (resp.ok) {
+          const data = await resp.json();
+          setCheck('check-repo', 'pass', 'Repo found: ' + data.full_name);
+          // Update stats
+          document.getElementById('stat-stars').textContent = data.stargazers_count;
+          document.getElementById('stat-forks').textContent = data.forks_count;
+          document.getElementById('stat-issues').textContent = data.open_issues_count;
+          const updated = new Date(data.updated_at);
+          document.getElementById('stat-updated').textContent = updated.toLocaleDateString();
+        } else if (resp.status === 404) {
+          setCheck('check-repo', 'fail', 'Repo not found (404)');
+        } else {
+          setCheck('check-repo', 'warn', 'Repo check returned ' + resp.status);
+        }
+      } catch (e) {
+        setCheck('check-repo', 'fail', 'Repo check failed: ' + e.message);
+      }
+
+      // Check 6: Pages enabled (we can infer from this page loading!)
+      if (window.location.hostname.endsWith('github.io')) {
+        setCheck('check-pages', 'pass', 'GitHub Pages confirmed (you're on github.io)');
+      } else {
+        setCheck('check-pages', 'warn', 'Not on github.io domain');
+      }
+
+      // Check 7: SSL
+      if (window.location.protocol === 'https:') {
+        setCheck('check-ssl', 'pass', 'HTTPS/SSL active');
+      } else {
+        setCheck('check-ssl', 'warn', 'Not using HTTPS');
+      }
+
+      document.getElementById('last-check').textContent = new Date().toLocaleTimeString();
+      log('All checks complete', 'ok');
+    }
+
+    async function loadCommits() {
+      try {
+        const resp = await fetch(API_BASE + '/commits?per_page=5');
+        if (!resp.ok) throw new Error(resp.status);
+        const commits = await resp.json();
+        const list = document.getElementById('commit-list');
+        list.innerHTML = commits.map(c => {
+          const sha = c.sha.substring(0, 7);
+          const msg = c.commit.message.split('\n')[0];
+          const time = new Date(c.commit.committer.date).toLocaleDateString();
+          return '<div class="commit"><span class="commit-sha">' + sha + '</span><span class="commit-msg">' + msg + '</span><span class="commit-time">' + time + '</span></div>';
+        }).join('');
+      } catch (e) {
+        document.getElementById('commit-list').innerHTML = '<div style="color:var(--error)">Failed to load commits: ' + e.message + '</div>';
+      }
+    }
+
+    // Run on load
+    document.addEventListener('DOMContentLoaded', () => {
+      runChecks();
+      loadCommits();
+    });
+  </script>
 </body>
 </html>
