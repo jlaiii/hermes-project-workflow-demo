@@ -1,0 +1,34 @@
+name: Pages Health Check
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: '0 * * * *'
+
+permissions:
+  contents: read
+  pages: read
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Pages URL
+        run: |
+          for i in 1 2 3; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' https://jlaiii.github.io/hermes-project-workflow-demo/)
+            echo "HTTP $code (attempt $i)"
+            [ "$code" = "200" ] && exit 0
+            sleep 5
+          done
+          exit 1
+
+      - name: Check API Endpoints
+        run: |
+          curl -s https://api.github.com/repos/jlaiii/hermes-project-workflow-demo | jq -r '.full_name'
+          
+      - name: Notify on failure
+        if: failure()
+        run: echo "⚠️ Pages or API check failed"

@@ -331,16 +331,40 @@
           setCheck('check-api', 'pass', 'GitHub API reachable (' + ms + 'ms)');
         } else {
           setCheck('check-api', 'warn', 'GitHub API returned ' + resp.status);
-        }
-      } catch (e) {
+        } catch (e) {
         setCheck('check-api', 'fail', 'GitHub API unreachable: ' + e.message);
       }
 
       // Check 5: Repo exists
       try {
-        const resp = await fetch(API_BASE);
-        if (resp.ok) {
-          const data = await resp.json();
+        // Retry wrapper with fallback cache
+        const fetchWithRetry = async (url) => {
+          const cacheKey = 'cache_' + btoa(url).replace(/=/g,'');
+          for (let attempt = 1; attempt <= 3; attempt++) {
+            try {
+              const r = await fetch(url);
+              if (r.ok) {
+                const d = await r.json();
+                try { localStorage.setItem(cacheKey, JSON.stringify({ts: Date.now(), data: d})); } catch(e){}
+                return d;
+              }
+              if (attempt === 3) throw new Error('HTTP ' + r.status);
+            } catch (e) {
+              if (attempt === 3) {
+                const cached = localStorage.getItem(cacheKey);
+                if (cached) {
+                  const parsed = JSON.parse(cached);
+                  log('Using cached data (' + Math.round((Date.now()-parsed.ts)/1000) + 's old)', 'warn');
+                  return parsed.data;
+                }
+                throw e;
+              }
+              await new Promise(res => setTimeout(res, 1000 * attempt));
+            }
+          }
+        };
+        
+        const data = await fetchWithRetry(API_BASE);
           setCheck('check-repo', 'pass', 'Repo found: ' + data.full_name);
           // Update stats
           document.getElementById('stat-stars').textContent = data.stargazers_count;
@@ -352,8 +376,7 @@
           setCheck('check-repo', 'fail', 'Repo not found (404)');
         } else {
           setCheck('check-repo', 'warn', 'Repo check returned ' + resp.status);
-        }
-      } catch (e) {
+        } catch (e) {
         setCheck('check-repo', 'fail', 'Repo check failed: ' + e.message);
       }
 
@@ -372,7 +395,20 @@
       }
 
       document.getElementById('last-check').textContent = new Date().toLocaleTimeString();
-      log('All checks complete', 'ok');
+      
+    // Check 8: Recent Actions runs
+    try {
+      const runsData = await fetchWithRetry(API_BASE + '/actions/runs?per_page=3');
+      if (runsData.workflow_runs && runsData.workflow_runs.length > 0) {
+        const runsList = runsData.workflow_runs.map(r => r.name + ': ' + (r.conclusion || r.status));
+        log('Last Actions: ' + runsList.slice(0,2).join(', '), 'ok');
+      } else {
+        log('No Actions runs found', 'info');
+      }
+    } catch (e) {
+      log('Actions check: ' + e.message, 'warn');
+    }
+    log('All checks complete', 'ok');
     }
 
     async function loadCommits() {
