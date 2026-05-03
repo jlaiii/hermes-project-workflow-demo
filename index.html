@@ -188,6 +188,40 @@
     .commit-msg { color: var(--fg); }
     .commit-time { color: var(--muted); font-size: 0.75rem; margin-left: auto; }
 
+
+    .issue-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-right: 0.3rem;
+      background: var(--border);
+      color: var(--fg);
+      border: 1px solid var(--border);
+    }
+    .issue-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 0;
+      font-size: 0.85rem;
+      border-bottom: 1px solid rgba(48,54,61,0.4);
+    }
+    .issue-item:last-child { border-bottom: none; }
+    .issue-state {
+      font-size: 0.7rem;
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .issue-state-open { background: rgba(63,185,80,0.15); color: var(--ok); }
+    .issue-state-closed { background: rgba(88,166,255,0.15); color: var(--accent); }
+    .issue-title { color: var(--fg); }
+    .issue-time { color: var(--muted); font-size: 0.75rem; margin-left: auto; }
     footer {
       text-align: center;
       color: var(--muted);
@@ -253,6 +287,18 @@
       <div class="commit-list" id="commit-list">
         <div style="color:var(--muted);font-size:0.9rem;">Loading...</div>
       </div>
+    </div>
+
+    <!-- LIVE ISSUES BREAKDOWN -->
+    <div class="card">
+      <h2>🐛 Live Issues Breakdown</h2>
+      <div class="stats-grid" id="issue-stats">
+        <div class="stat-box"><div class="stat-value" id="issues-open">…</div><div class="stat-label">Open</div></div>
+        <div class="stat-box"><div class="stat-value" id="issues-closed">…</div><div class="stat-label">Closed</div></div>
+        <div class="stat-box"><div class="stat-value" id="issues-recent">…</div><div class="stat-label">Recent (7d)</div></div>
+        <div class="stat-box"><div class="stat-value" id="issues-labels">…</div><div class="stat-label">Top Label</div></div>
+      </div>
+      <div id="issue-activity" style="margin-top:0.75rem;"></div>
     </div>
 
     <!-- WORKFLOW RESULTS -->
@@ -413,8 +459,56 @@
         setCheck('check-commits', 'fail', 'Commits check failed: ' + e.message);
       }
 
+      await loadIssues();
       document.getElementById('last-check').textContent = new Date().toLocaleTimeString();
       log('All checks complete', 'ok');
+    }
+
+    async function loadIssues() {
+      log('Fetching issue breakdown...', 'info');
+      try {
+        const allIssues = await fetchWithRetry(API_BASE + '/issues?state=all&per_page=100');
+        // Filter out pull requests (GitHub returns PRs as issues too)
+        const issuesOnly = allIssues.filter(i => !i.pull_request);
+        const openCount = issuesOnly.filter(i => i.state === 'open').length;
+        const closedCount = issuesOnly.filter(i => i.state === 'closed').length;
+        const now = Date.now();
+        const recentCount = issuesOnly.filter(i => {
+          const created = new Date(i.created_at).getTime();
+          return (now - created) < 7 * 24 * 60 * 60 * 1000;
+        }).length;
+
+        document.getElementById('issues-open').textContent = openCount;
+        document.getElementById('issues-closed').textContent = closedCount;
+        document.getElementById('issues-recent').textContent = recentCount;
+
+        // Labels breakdown
+        const labelCounts = {};
+        issuesOnly.forEach(i => {
+          i.labels.forEach(l => { labelCounts[l.name] = (labelCounts[l.name] || 0) + 1; });
+        });
+        const topLabel = Object.entries(labelCounts).sort((a,b) => b[1]-a[1])[0];
+        document.getElementById('issues-labels').textContent = topLabel ? topLabel[0] : 'none';
+
+        // Recent activity list (last 5 issues, sorted by updated)
+        const sorted = issuesOnly.sort((a,b) => new Date(b.updated_at) - new Date(a.updated_at)).slice(0, 5);
+        const container = document.getElementById('issue-activity');
+        if (sorted.length === 0) {
+          container.innerHTML = '<div style="color:var(--muted);font-size:0.9rem;">No issues found.</div>';
+        } else {
+          container.innerHTML = '<div style="font-size:0.85rem;color:var(--muted);margin-bottom:0.4rem;">Recent activity:</div>' +
+            sorted.map(i => {
+              const stateClass = i.state === 'open' ? 'issue-state-open' : 'issue-state-closed';
+              const stateText = i.state === 'open' ? 'open' : 'closed';
+              const time = new Date(i.updated_at).toLocaleDateString();
+              const labels = i.labels.map(l => '<span class="issue-label" style="background:#' + (l.color || '30363d') + '22;color:#' + (l.color || '8b949e') + ';">' + l.name + '</span>').join('');
+              return '<div class="issue-item"><span class="issue-state ' + stateClass + '">' + stateText + '</span><span class="issue-title">#' + i.number + ' ' + i.title + '</span>' + labels + '<span class="issue-time">' + time + '</span></div>';
+            }).join('');
+        }
+        log('Issue breakdown loaded (' + openCount + ' open, ' + closedCount + ' closed)', 'ok');
+      } catch (e) {
+        log('Issue breakdown failed: ' + e.message, 'error');
+      }
     }
 
     // Run on load
